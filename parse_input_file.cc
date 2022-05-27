@@ -244,10 +244,10 @@ namespace input_file_parsing {
         }
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
-          in.read_opt_verb<bool>(mparams.potential,
-                                 {"measurements", "potential", "potential"});
-          in.read_opt_verb<bool>(mparams.potentialsmall,
-                                 {"measurements", "potential", "potentialsmall"});
+          in.read_opt_verb<bool>(mparams.potentialplanar,
+                                 {"measurements", "potential", "potentialplanar"});
+          in.read_opt_verb<bool>(mparams.potentialnonplanar,
+                                 {"measurements", "potential", "potentialnonplanar"});
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
                                  {"measurements", "potential", "smear_spatial_only"});
@@ -258,6 +258,11 @@ namespace input_file_parsing {
           in.read_opt_verb<double>(mparams.alpha, {"measurements", "potential", "alpha"});
           in.read_opt_verb<double>(mparams.sizeWloops,
                                    {"measurements", "potential", "sizeWloops"});
+          if(!mparams.potentialnonplanar && ! mparams.potentialplanar){
+            std::cerr << "You want to measure something for the potential, "
+            << "but neither potentialplanar nor potentialnonplanar is selected"
+            << std::endl << "no measurements for the potential will be made!" << std::endl;
+          }
         }
 
         in.read_opt_verb<std::string>(mparams.conf_dir, {"measurements", "conf_dir"});
@@ -265,6 +270,7 @@ namespace input_file_parsing {
 
         in.read_opt_verb<std::string>(mparams.conf_basename,
                                       {"measurements", "conf_basename"});
+        in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"measurements", "lenghty_conf_name"});
 
         in.read_opt_verb<size_t>(mparams.beta_str_width,
                                  {"measurements", "beta_str_width"});
@@ -272,7 +278,6 @@ namespace input_file_parsing {
 
         in.finalize();
 
-        in.finalize();
         return 0;
       }
 
@@ -303,10 +308,10 @@ namespace input_file_parsing {
 
         // beta, xi value from the gauge action
         in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-        in.read_opt_verb<bool>(pparams.anisotropic,
-                               {"monomials", "gauge", "anisotropic"});
-        if (pparams.anisotropic) {
-          in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "xi"});
+        if (nd["monomials"]["gauge"]["anisotropic"]) {
+          pparams.anisotropic = true;
+          in.read_opt_verb<double>(pparams.xi,
+                                   {"monomials", "gauge", "anisotropic", "xi"});
         }
 
         // measure-u1 parameters
@@ -318,6 +323,7 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename,
                                       {"metropolis", "conf_basename"});
+        in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"metropolis", "lenghty_conf_name"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,
                                  {"metropolis", "beta_str_width"});
         validate_beta_str_width(mcparams.beta_str_width);

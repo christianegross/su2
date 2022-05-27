@@ -127,7 +127,7 @@ namespace io {
         std::cerr << "Currently not working for dim = 2, no measurements for the "
                      "potential will be made"
                   << std::endl;
-        mparams.potential = false;
+        mparams.potentialplanar = false;
       }
 
       //~ print heads of columns: W(r, t), W(x, y)
@@ -175,7 +175,7 @@ namespace io {
         std::cerr << "Currently not working for dim = 2 and dim = 4, no nonplanar "
                      "measurements will be made"
                   << std::endl;
-        mparams.potentialsmall = false;
+        mparams.potentialnonplanar = false;
       }
 
       //~ print heads of columns

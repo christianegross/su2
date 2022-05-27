@@ -52,11 +52,11 @@ namespace global_parameters {
     std::string resdir = "./"; // directory where results from measurements for potential,
                                // potentialsmall are stored
 
-    bool potential =
+    bool potentialplanar =
       false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
              // measured with a maximum size of lattice extent * sizeloops, and written to
              // separate files. Only available for ndims=3,4
-    bool potentialsmall =
+    bool potentialnonplanar =
       false; // The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <=
              // Lt * sizeloops and saved to one file. Only available for ndim=3
     bool append = false; // are measurements for potential appended to an existing file,
