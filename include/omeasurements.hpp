@@ -118,7 +118,7 @@ namespace omeasurements {
   void
   meas_loops_planar_pot(const gaugeconfig<Group> &U,
                         const global_parameters::physics &pparams,
-                        const size_t &sizeWloops,
+                        const double &sizeWloops,
                         const std::string &filename_coarse,
                         const std::string &filename_fine, 
                         const size_t &i){
@@ -191,7 +191,7 @@ namespace omeasurements {
   void
   meas_loops_nonplanar_pot(const gaugeconfig<Group> &U,
                         const global_parameters::physics &pparams,
-                        const size_t &sizeWloops,
+                        const double &sizeWloops,
                         const std::string &filename_nonplanar,
                         const size_t &i){
     double loop;
