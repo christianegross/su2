@@ -66,6 +66,14 @@ inline double retrace(const Complex c) {
   return(std::real(c));
 }
 
+inline double imtrace(_u1 const &U) {
+  return(std::sin(U.geta()));
+}
+
+inline double imtrace(const Complex c) {
+  return(std::imag(c));
+}
+
 inline Complex trace(const Complex c) {
   return(c); // for U(1) the trace operator acts trivially
 }

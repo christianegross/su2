@@ -17,3 +17,20 @@ template<class numbertype=double> std::vector<numbertype> zerovector(size_t leng
     std::vector<numbertype> res(length); //zero is implicit
     return res;
 }
+//compares two vectors
+template<class numbertype=double> bool operator==(const std::vector<numbertype> &v1, const std::vector<numbertype> &v2){
+  if(v1.size() != v2.size()){
+    std::cerr << "vectors do not match in size! Comparison is not possible." << std::endl;
+    abort();
+  }  
+  for(size_t i = 0; i < v1.size(); i++){
+    if(v1[i] != v2[i]){
+      return false;
+    }
+  }
+  return true;
+}
+//compares two vectors
+template<class numbertype=double> bool operator!=(const std::vector<numbertype> &v1, const std::vector<numbertype> &v2){
+  return (!(v1==v2));
+}
