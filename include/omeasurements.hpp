@@ -16,6 +16,7 @@
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "wilsonloop.hh"
+#include "operators.hh"
 
 namespace omeasurements {
 
@@ -210,5 +211,49 @@ namespace omeasurements {
     resultfile << std::endl; 
     resultfile.close();
   }
+  
+  /**
+   * measures average of spatial plaquettes and spatial-temporal plaquettes for each timeslice
+   * **/
+  template <class Group>
+  void
+  meas_one_time(const gaugeconfig<Group> &U,
+                        const global_parameters::physics &pparams,
+                        const std::string &filename_glueball,
+                        const size_t &i){
+    double res;
+    std::ofstream resultfile;
+    resultfile.open(filename_glueball, std::ios::app);
+    double timeslice;
+    if(pparams.ndims==4){
+      for (size_t t = 0 ; t < pparams.Lt ; t++){
+        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false});
+        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,3,1,3}, {true, true, false, false});
+        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {3,2,3,2}, {true, true, false, false});
+        resultfile << std::setw(14) << std::scientific << timeslice/(3*pparams.Lx*pparams.Ly*pparams.Lz) << "  " ;
+      }
+      for (size_t t = 0 ; t < pparams.Lt ; t++){
+        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false});
+        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false});
+        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,3,0,3}, {true, true, false, false});
+        resultfile << std::setw(14) << std::scientific << timeslice/(3*pparams.Lx*pparams.Ly*pparams.Lz) << "  " ;
+      }
+    }
+    if(pparams.ndims==3){
+      for (size_t t = 0 ; t < pparams.Lt ; t++){
+        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false});
+        resultfile << std::setw(14) << std::scientific << timeslice/(pparams.Lx*pparams.Ly) << "  " ;
+      }
+      for (size_t t = 0 ; t < pparams.Lt ; t++){
+        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false});
+        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false});
+        resultfile << std::setw(14) << std::scientific << timeslice/(2*pparams.Lx*pparams.Ly) << "  " ;
+      }
+    }
+    resultfile << i;
+    resultfile << std::endl; 
+    resultfile.close();
+  }
+
 
 } // namespace omeasurements

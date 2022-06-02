@@ -108,6 +108,21 @@ namespace io {
       return f.str();
     }
 
+    std::string get_filename_glueball(const gp::physics &pparams,
+                                       const gp::measure_u1 &mparams) {
+      std::ostringstream f;
+
+      f << mparams.resdir << "/"
+        << "result" << pparams.ndims - 1 << "p1d.Nt" << pparams.Lt << ".Ns"
+        << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
+        << pparams.beta << ".xi" << std::fixed
+        << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
+        << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "glueball"
+        << std::ends;
+
+      return f.str();
+    }
+
     /**
      * @brief writes the headers for the results of the planar Wilson-Loops
      * in the files. coarse is the spacial direction, fine the temporal direction.
@@ -188,6 +203,40 @@ namespace io {
               resultfile << "W(x=" << x << ",t=" << t << ",y=" << y << ")  ";
             }
           }
+        }
+        resultfile << "counter";
+        resultfile << std::endl;
+        resultfile.close();
+      }
+    }
+    
+    /**
+     * @brief writes the headers for the results of the time slice measurements needed for the glueball in the
+     * file.
+     * @param pparams physical parameters
+     * @param mparams parameters specific to measurement. May change if a non-valid
+     * dimension is given, so cannot be const.
+     * @param filenamenonplanar: name of the files where results are stored.
+     * **/
+    void set_header_glueball(const gp::physics &pparams,
+                              gp::measure_u1 &mparams,
+                              const std::string &filename_glueball) {
+      //~ open file for saving results
+      std::ofstream resultfile;
+
+      if (pparams.ndims == 2) {
+        std::cerr << "Currently not working for dim = 2 , no timeslice "
+                     "measurements will be made"
+                  << std::endl;
+        mparams.glueball = false;
+      }
+
+      //~ print heads of columns
+      if (!mparams.append && (pparams.ndims != 2)) {
+        resultfile.open(filename_glueball, std::ios::out);
+        resultfile << "## ";
+        for (size_t t = 0; t < pparams.Lt; t++) {
+              resultfile << "t=" << t << "  ";
         }
         resultfile << "counter";
         resultfile << std::endl;

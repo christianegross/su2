@@ -75,6 +75,8 @@ int main(int ac, char *av[]) {
   const std::string filename_coarse = io::measure::get_filename_coarse(pparams, mparams);
   const std::string filename_nonplanar =
     io::measure::get_filename_nonplanar(pparams, mparams);
+  const std::string filename_glueball =
+    io::measure::get_filename_glueball(pparams, mparams);
 
   // write explanatory headers into result-files, also check if measuring routine is
   // implemented for given dimension
@@ -83,6 +85,9 @@ int main(int ac, char *av[]) {
   }
   if (mparams.potentialnonplanar) {
     io::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
+  }
+  if (mparams.glueball) {
+    io::measure::set_header_glueball(pparams, mparams, filename_glueball);
   }
 
   /**
@@ -132,7 +137,7 @@ int main(int ac, char *av[]) {
       omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, mparams);
     }
 
-    if (mparams.potentialplanar || mparams.potentialnonplanar) {
+    if (mparams.potentialplanar || mparams.potentialnonplanar || mparams.glueball) {
       // smear lattice
       for (size_t smears = 0; smears < mparams.n_apesmear; smears += 1) {
         smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only,
@@ -147,6 +152,10 @@ int main(int ac, char *av[]) {
       if (mparams.potentialnonplanar) {
         omeasurements::meas_loops_nonplanar_pot(U, pparams, mparams.sizeWloops,
                                                 filename_nonplanar, i);
+      }
+
+      if( mparams.glueball){
+        omeasurements::meas_one_time(U, pparams, filename_glueball, i);
       }
     }
   }

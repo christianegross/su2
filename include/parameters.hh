@@ -59,6 +59,8 @@ namespace global_parameters {
     bool potentialnonplanar =
       false; // The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <=
              // Lt * sizeloops and saved to one file. Only available for ndim=3
+    bool glueball =
+      false; // Does measurements for single timeslices, which can be used to determine the glueball masses
     bool append = false; // are measurements for potential appended to an existing file,
                          // or should it be overwritten?
     double sizeWloops =

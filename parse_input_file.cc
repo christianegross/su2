@@ -248,6 +248,8 @@ namespace input_file_parsing {
                                  {"measurements", "potential", "potentialplanar"});
           in.read_opt_verb<bool>(mparams.potentialnonplanar,
                                  {"measurements", "potential", "potentialnonplanar"});
+          in.read_opt_verb<bool>(mparams.glueball,
+                                 {"measurements", "potential", "glueball"});
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
                                  {"measurements", "potential", "smear_spatial_only"});
