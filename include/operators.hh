@@ -21,6 +21,16 @@
 using Complex = std::complex<double>;
 
 namespace operators {
+    /** 
+     * idea: make operators into a struct, so it is more compact. Maybe extend it into a class with methods like checking for a closed loop and rotating an operator?
+     * **/
+    //~ struct operatorpath{
+        //~ std::vector<size_t> lengths;
+        //~ std::vector<size_t> directions;
+        //~ std::vector<bool> sign;
+    //~ } //struct operatorpath
+        
+        
     /**
      * @brief computes the sum of all plaquettes in the mu-nu-plane in the time slice t
      * **/
@@ -57,6 +67,7 @@ namespace operators {
    * @param U configuration upon which the operator is measured
    * @param x vector of the starting point of the operator
    * @param lengths, directions, sign vectors describing the path of the operator
+   * @param P parity, 0 for no parity operation, +/- for positive and negative parity
    * @note The vectors must have the same length. For each element, the path goes lengths[i] steps into direction[i],
    * with sign[i] determining if the path is traced forwards or backwards.
    * It makes sense to have all elements of direction in (0, U.getndims-1), 
@@ -74,7 +85,8 @@ namespace operators {
                                              const std::vector<size_t> &x,
                                              const std::vector<size_t> &lengths,
                                              const std::vector<size_t> &directions,
-                                             const std::vector<bool> &sign){
+                                             const std::vector<bool> &sign, 
+                                             size_t P=0){
     typedef typename accum_type<Group>::type accum;
     if( (lengths.size()!=directions.size()) || (lengths.size()!=sign.size()) ){
       std::cerr << "the lengths of the descriptors of the loop are not equal, no loop can be calculated!" << std::endl;
@@ -85,14 +97,22 @@ namespace operators {
     for(size_t i=0; i<lengths.size(); i++){
       if(sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
-          L *= U(xrun, directions[i]);
+          if(P!=0 && directions[i] > 0){
+            L *= U(xrun, directions[i]).dagger();
+          } else{
+            L *= U(xrun, directions[i]);
+          }
           xrun[directions[i]]++;
         }
       }
       if(!sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
           xrun[directions[i]]--;
-          L *= U(xrun, directions[i]).dagger();
+          if(P!=0 && directions[i] > 0){
+            L *= U(xrun, directions[i]);
+          } else{
+            L *= U(xrun, directions[i]).dagger();
+          }
         }
       }
     }
@@ -100,6 +120,7 @@ namespace operators {
       std::cerr << "The loop was not closed!" << std::endl;
       //~ abort();
     }
+    if(P<0){ L=-L;}
     return L;
   }
   
@@ -149,6 +170,42 @@ namespace operators {
           for (size_t z = 0; z < U.getLz(); z++) {
             std::vector<size_t> vecx = {t, x, y, z};
             res += retrace(arbitrary_operator(U, vecx, lengths, directions, sign));
+          }
+        }
+      }
+    }
+    return res;
+  }
+  
+    /** 
+   * @brief according to PC-specifications, returns an operator of the given loop with parity, charge conjugation eigenvalues as given
+   * **/
+  template <class Group>
+  double measure_arbitrary_loop_one_timeslice_PC(const gaugeconfig<Group>&U,
+                                          const size_t t,
+                                          const std::vector<size_t> &lengths,
+                                          const std::vector<size_t> &directions,
+                                          const std::vector<bool> &sign, 
+                                          const bool P, 
+                                          const bool C){
+    double res = 0.;
+    typedef typename accum_type<Group>::type accum;
+    accum K1, K2;
+    size_t par=(P? +1: -1);
+    
+    #pragma omp parallel for reduction(+ : res)
+    for (size_t x = 0; x < U.getLx(); x++) {
+      for (size_t y = 0; y < U.getLy(); y++) {
+        for (size_t z = 0; z < U.getLz(); z++) {
+          std::vector<size_t> vecx = {t, x, y, z};
+          //~ res += retrace(arbitrary_operator(U, vecx, lengths, directions, sign));
+          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, P=0);
+          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, P=par);
+          if(C){ //C=+
+              res += retrace(K1+K2);
+          }
+          if(!C){ //C=-
+              res += imtrace(K1+K2);
           }
         }
       }
