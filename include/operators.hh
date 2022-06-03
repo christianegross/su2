@@ -30,6 +30,8 @@ namespace operators {
         //~ std::vector<bool> sign;
     //~ } //struct operatorpath
         
+    
+    
         
     /**
      * @brief computes the sum of all plaquettes in the mu-nu-plane in the time slice t
@@ -86,8 +88,12 @@ namespace operators {
                                              const std::vector<size_t> &lengths,
                                              const std::vector<size_t> &directions,
                                              const std::vector<bool> &sign, 
-                                             size_t P=0){
+                                             const size_t P=0){
     typedef typename accum_type<Group>::type accum;
+    //~ if(P!=0){
+        //~ std::cerr << "Parity conjugation is not yet implemented correctly! Your results would be wrong. Aborting" << std::endl;
+        //~ abort();
+    //~ }
     if( (lengths.size()!=directions.size()) || (lengths.size()!=sign.size()) ){
       std::cerr << "the lengths of the descriptors of the loop are not equal, no loop can be calculated!" << std::endl;
       abort();
@@ -98,20 +104,30 @@ namespace operators {
       if(sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
           if(P!=0 && directions[i] > 0){
-            L *= U(xrun, directions[i]).dagger();
+            xrun[directions[i]]--;
+            L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]).dagger();
           } else{
-            L *= U(xrun, directions[i]);
+            if(P!=0){
+              L *= U(invertspace(xrun), directions[i]);
+            } else{
+              L *= U(xrun, directions[i]);
+            }
+            xrun[directions[i]]++;
           }
-          xrun[directions[i]]++;
         }
       }
       if(!sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
-          xrun[directions[i]]--;
           if(P!=0 && directions[i] > 0){
-            L *= U(xrun, directions[i]);
+            L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]);
+            xrun[directions[i]]++;
           } else{
-            L *= U(xrun, directions[i]).dagger();
+            xrun[directions[i]]--;
+            if(P!=0){
+              L *= U(invertspace(xrun), directions[i]).dagger();
+            } else{
+              L *= U(xrun, directions[i]).dagger();
+            }
           }
         }
       }
@@ -192,6 +208,7 @@ namespace operators {
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
     size_t par=(P? +1: -1);
+    //~ gaugeconfig<Group> PU=parityinvert(U);
     
     #pragma omp parallel for reduction(+ : res)
     for (size_t x = 0; x < U.getLx(); x++) {
@@ -199,13 +216,12 @@ namespace operators {
         for (size_t z = 0; z < U.getLz(); z++) {
           std::vector<size_t> vecx = {t, x, y, z};
           //~ res += retrace(arbitrary_operator(U, vecx, lengths, directions, sign));
-          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, P=0);
-          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, P=par);
+          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/0);
+          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/par);
           if(C){ //C=+
-              res += retrace(K1+K2);
-          }
-          if(!C){ //C=-
-              res += imtrace(K1+K2);
+            res += retrace(K1+K2);
+          } else{ //C=-
+            res += imtrace(K1+K2);
           }
         }
       }

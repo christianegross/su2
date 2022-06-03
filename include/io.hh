@@ -118,7 +118,8 @@ namespace io {
         << pparams.beta << ".xi" << std::fixed
         << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
         << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "glueball"
-        << std::ends;
+        //~ << std::ends
+        ;
 
       return f.str();
     }
@@ -235,8 +236,15 @@ namespace io {
       if (!mparams.append && (pparams.ndims != 2)) {
         resultfile.open(filename_glueball, std::ios::out);
         resultfile << "## ";
-        for (size_t t = 0; t < pparams.Lt; t++) {
+        for (size_t parity=0; parity<=1; parity ++){
+          for (size_t charge=0; charge<=1; charge ++){
+            bool P = parity==1;
+            bool C = charge==1;
+            resultfile << "P=" << P << ", C=" << C << "  ";
+            for (size_t t = 0; t < pparams.Lt; t++) {
               resultfile << "t=" << t << "  ";
+            }
+          }
         }
         resultfile << "counter";
         resultfile << std::endl;

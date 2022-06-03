@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <vector>
 
 #include "gradient_flow.hh"
@@ -221,10 +222,18 @@ namespace omeasurements {
                         const global_parameters::physics &pparams,
                         const std::string &filename_glueball,
                         const size_t &i){
-    double res;
+    std::ostringstream f;
+    f << filename_glueball << "." << i << ".dat";
+    const std::string path = f.str();
+    std::cout << filename_glueball << std::endl;
+    std::cout << filename_glueball[1] << std::endl;
+    std::cout << path << std::endl;
     std::ofstream resultfile;
-    resultfile.open(filename_glueball, std::ios::app);
+    std::cout << resultfile.is_open() << std::endl;
+    resultfile.open(path, std::ios::out);
+    std::cout << resultfile.is_open() << std::endl;
     double timeslice;
+    //~ double res;
     if(pparams.ndims==4){
       for (size_t t = 0 ; t < pparams.Lt ; t++){
         timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false});
@@ -240,18 +249,33 @@ namespace omeasurements {
       }
     }
     if(pparams.ndims==3){
-      for (size_t t = 0 ; t < pparams.Lt ; t++){
-        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false});
-        resultfile << std::setw(14) << std::scientific << timeslice/(pparams.Lx*pparams.Ly) << "  " ;
+      resultfile << "## t  ";
+      for (size_t parity=0; parity<=1; parity ++){
+        for (size_t charge=0; charge<=1; charge ++){
+            bool P = parity==1;
+            bool C = charge==1;
+          resultfile << "(P=" << P << ",C=" << C << ")  spa-spa  spa-temp  ";
+        }
       }
+      resultfile << std::endl;
       for (size_t t = 0 ; t < pparams.Lt ; t++){
-        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false});
-        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false});
-        resultfile << std::setw(14) << std::scientific << timeslice/(2*pparams.Lx*pparams.Ly) << "  " ;
+        resultfile << t << "  ";
+        for (size_t parity=0; parity<=1; parity ++){
+          for (size_t charge=0; charge<=1; charge ++){
+            bool P = parity==1;
+            bool C = charge==1;
+            timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false}, P, C);
+            resultfile << std::setw(14) << std::scientific << timeslice/(pparams.Lx*pparams.Ly) << "  " ;
+            timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false}, P, C);
+            timeslice+=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false}, P, C);
+            resultfile << std::setw(14) << std::scientific << timeslice/(2*pparams.Lx*pparams.Ly) << "  " ;
+          }
+        }
+        resultfile << std::endl;
       }
     }
-    resultfile << i;
-    resultfile << std::endl; 
+    //~ resultfile << i;
+    //~ resultfile << std::endl; 
     resultfile.close();
   }
 
