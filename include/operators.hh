@@ -19,6 +19,7 @@
 #include "vectorfunctions.hh"
 
 using Complex = std::complex<double>;
+#pragma omp declare reduction (+ : std::complex<double> : omp_out += omp_in) initializer (omp_priv = 0)
 
 namespace operators {
     /** 
@@ -34,15 +35,14 @@ namespace operators {
     
         
     /**
-     * @brief computes the sum of all plaquettes in the mu-nu-plane in the time slice t
+     * @brief computes the sum of the trace of all plaquettes in the mu-nu-plane in the time slice t
      * **/
   template <class Group>
-  double ReP(const gaugeconfig<Group> &U,
+  Complex plaquette_one_timeslice(const gaugeconfig<Group> &U,
                         const size_t &t,
                         const size_t &mu,
                         const size_t &nu) {
-    double res = 0.;
-    typedef typename accum_type<Group>::type accum;
+    Complex res = 0.;
     
     #pragma omp parallel for reduction(+ : res)
     for (size_t x = 0; x < U.getLx(); x++) {
@@ -53,7 +53,7 @@ namespace operators {
           std::vector<size_t> vecxplusnu = vecx;
           vecxplusmu[mu] += 1;
           vecxplusnu[nu] += 1;
-          res += retrace(U(vecx, mu) * U(vecxplusmu, nu) * U(vecxplusnu, mu).dagger() *
+          res += trace(U(vecx, mu) * U(vecxplusmu, nu) * U(vecxplusnu, mu).dagger() *
                           U(vecx, nu).dagger());
           vecxplusmu[mu] -= 1;
           vecxplusnu[nu] -= 1;

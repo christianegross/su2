@@ -213,6 +213,9 @@ namespace omeasurements {
     resultfile.close();
   }
   
+  
+  using Complex = std::complex<double>;
+  
   /**
    * measures average of spatial plaquettes and spatial-temporal plaquettes for each timeslice
    * **/
@@ -222,60 +225,40 @@ namespace omeasurements {
                         const global_parameters::physics &pparams,
                         const std::string &filename_glueball,
                         const size_t &i){
-    std::ostringstream f;
-    f << filename_glueball << "." << i << ".dat";
-    const std::string path = f.str();
-    std::cout << filename_glueball << std::endl;
-    std::cout << filename_glueball[1] << std::endl;
-    std::cout << path << std::endl;
     std::ofstream resultfile;
-    std::cout << resultfile.is_open() << std::endl;
-    resultfile.open(path, std::ios::out);
-    std::cout << resultfile.is_open() << std::endl;
-    double timeslice;
-    //~ double res;
+    resultfile.open(filename_glueball, std::ios::app);
+    Complex timeslice;
     if(pparams.ndims==4){
-      for (size_t t = 0 ; t < pparams.Lt ; t++){
-        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false});
-        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {1,3,1,3}, {true, true, false, false});
-        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {3,2,3,2}, {true, true, false, false});
-        resultfile << std::setw(14) << std::scientific << timeslice/(3*pparams.Lx*pparams.Ly*pparams.Lz) << "  " ;
-      }
-      for (size_t t = 0 ; t < pparams.Lt ; t++){
-        timeslice=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false});
-        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false});
-        timeslice+=operators::measure_re_arbitrary_loop_one_timeslice(U, t, {1,1,1,1}, {0,3,0,3}, {true, true, false, false});
-        resultfile << std::setw(14) << std::scientific << timeslice/(3*pparams.Lx*pparams.Ly*pparams.Lz) << "  " ;
+      for (size_t t = 0 ; t < pparams.Lt ; t++){ 
+          //spacial-spacial
+        timeslice=operators::plaquette_one_timeslice(U, t, 1, 2);
+        timeslice+=operators::plaquette_one_timeslice(U, t, 1, 3);
+        timeslice+=operators::plaquette_one_timeslice(U, t, 2,3);
+        timeslice/=(3*pparams.Lx*pparams.Ly*pparams.Lz); 
+        resultfile << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+          //spacial-temporal
+        timeslice=operators::plaquette_one_timeslice(U, t, 0, 1);
+        timeslice+=operators::plaquette_one_timeslice(U, t, 0, 2);
+        timeslice+=operators::plaquette_one_timeslice(U, t, 0, 3);
+        timeslice/=(3*pparams.Lx*pparams.Ly*pparams.Lz); 
+        resultfile << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
       }
     }
     if(pparams.ndims==3){
-      resultfile << "## t  ";
-      for (size_t parity=0; parity<=1; parity ++){
-        for (size_t charge=0; charge<=1; charge ++){
-            bool P = parity==1;
-            bool C = charge==1;
-          resultfile << "(P=" << P << ",C=" << C << ")  spa-spa  spa-temp  ";
-        }
-      }
-      resultfile << std::endl;
-      for (size_t t = 0 ; t < pparams.Lt ; t++){
-        resultfile << t << "  ";
-        for (size_t parity=0; parity<=1; parity ++){
-          for (size_t charge=0; charge<=1; charge ++){
-            bool P = parity==1;
-            bool C = charge==1;
-            timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {1,2,1,2}, {true, true, false, false}, P, C);
-            resultfile << std::setw(14) << std::scientific << timeslice/(pparams.Lx*pparams.Ly) << "  " ;
-            timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {0,1,0,1}, {true, true, false, false}, P, C);
-            timeslice+=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, {1,1,1,1}, {0,2,0,2}, {true, true, false, false}, P, C);
-            resultfile << std::setw(14) << std::scientific << timeslice/(2*pparams.Lx*pparams.Ly) << "  " ;
-          }
-        }
-        resultfile << std::endl;
+      for (size_t t = 0 ; t < pparams.Lt ; t++){ 
+          //spacial-spacial
+        timeslice=operators::plaquette_one_timeslice(U, t, 1, 2);
+        timeslice/=(pparams.Lx*pparams.Ly*pparams.Lz); 
+        resultfile << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+          //spacial-temporal
+        timeslice=operators::plaquette_one_timeslice(U, t, 0, 1);
+        timeslice+=operators::plaquette_one_timeslice(U, t, 0, 2);
+        timeslice/=(2*pparams.Lx*pparams.Ly*pparams.Lz); 
+        resultfile << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
       }
     }
-    //~ resultfile << i;
-    //~ resultfile << std::endl; 
+    resultfile << i;
+    resultfile << std::endl; 
     resultfile.close();
   }
 
