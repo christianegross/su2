@@ -155,7 +155,7 @@ int main(int ac, char *av[]) {
       }
 
       if( mparams.glueball){
-        omeasurements::meas_one_time(U, pparams, filename_glueball, i);
+        omeasurements::meas_one_time_v2(U, pparams, filename_glueball, i);
         //~ omeasurements::meas_one_time(U, pparams, i);
       }
     }

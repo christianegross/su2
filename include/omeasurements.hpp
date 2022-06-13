@@ -263,4 +263,40 @@ namespace omeasurements {
   }
 
 
+  /**
+   * measures average of spatial plaquettes and spatial-temporal plaquettes for each timeslice
+   * **/
+  template <class Group>
+  void
+  meas_one_time_v2(const gaugeconfig<Group> &U,
+                        const global_parameters::physics &pparams,
+                        const std::string &filename_glueball,
+                        const size_t &i){
+    std::ofstream resultfile;
+    resultfile.open(filename_glueball, std::ios::app);
+    std::vector<double> timeslice;
+    for (size_t t = 0 ; t < pparams.Lt ; t++){ 
+        //spacial-spacial
+      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+        for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
+          timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
+        }
+      }
+      timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz); 
+      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        timeslice[0] << "  " << timeslice[1] << "  " << timeslice[2] << "  " << timeslice[3] << "  ";
+          //spacial-temporal
+      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+        timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
+      }
+      timeslice/=(double)((pparams.ndims-1)*pparams.Lx*pparams.Ly*pparams.Lz); 
+      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        timeslice[0] << "  " << timeslice[1] << "  " << timeslice[2] << "  " << timeslice[3] << "  ";
+    }
+    resultfile << i;
+    resultfile << std::endl; 
+    resultfile.close();
+  }
+
+
 } // namespace omeasurements

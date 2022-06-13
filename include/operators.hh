@@ -20,6 +20,7 @@
 
 using Complex = std::complex<double>;
 #pragma omp declare reduction (+ : std::complex<double> : omp_out += omp_in) initializer (omp_priv = 0)
+#pragma omp declare reduction (+ : std::vector<double> : omp_out += omp_in) initializer (omp_priv = zerovector(omp_orig.size()))
 
 namespace operators {
     /** 
@@ -69,7 +70,7 @@ namespace operators {
    * @param U configuration upon which the operator is measured
    * @param x vector of the starting point of the operator
    * @param lengths, directions, sign vectors describing the path of the operator
-   * @param P parity, 0 for no parity operation, +/- for positive and negative parity
+   * @param P parity, 0 for no parity operation, +/- 1 for positive and negative parity
    * @note The vectors must have the same length. For each element, the path goes lengths[i] steps into direction[i],
    * with sign[i] determining if the path is traced forwards or backwards.
    * It makes sense to have all elements of direction in (0, U.getndims-1), 
@@ -88,7 +89,7 @@ namespace operators {
                                              const std::vector<size_t> &lengths,
                                              const std::vector<size_t> &directions,
                                              const std::vector<bool> &sign, 
-                                             const size_t P=0){
+                                             const bool P=false){
     typedef typename accum_type<Group>::type accum;
     //~ if(P!=0){
         //~ std::cerr << "Parity conjugation is not yet implemented correctly! Your results would be wrong. Aborting" << std::endl;
@@ -103,13 +104,13 @@ namespace operators {
     for(size_t i=0; i<lengths.size(); i++){
       if(sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
-          if(P!=0 && directions[i] > 0){
+          if(P && directions[i] > 0){ //parity and spacial
             xrun[directions[i]]--;
             L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]).dagger();
           } else{
-            if(P!=0){
+            if(P){ //parity and temporal
               L *= U(invertspace(xrun), directions[i]);
-            } else{
+            } else{ //standard
               L *= U(xrun, directions[i]);
             }
             xrun[directions[i]]++;
@@ -118,14 +119,14 @@ namespace operators {
       }
       if(!sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
-          if(P!=0 && directions[i] > 0){
+          if(P && directions[i] > 0){ //parity and spacial
             L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]);
             xrun[directions[i]]++;
           } else{
             xrun[directions[i]]--;
-            if(P!=0){
+            if(P){ //parity and temporal
               L *= U(invertspace(xrun), directions[i]).dagger();
-            } else{
+            } else{ //standard
               L *= U(xrun, directions[i]).dagger();
             }
           }
@@ -136,7 +137,6 @@ namespace operators {
       std::cerr << "The loop was not closed!" << std::endl;
       //~ abort();
     }
-    if(P<0){ L=-L;}
     return L;
   }
   
@@ -194,20 +194,20 @@ namespace operators {
   }
   
     /** 
-   * @brief according to PC-specifications, returns an operator of the given loop with parity, charge conjugation eigenvalues as given
+   * @brief returns an operator of the given loop, as a vector with PC={++, +-, -+, --}
    * **/
   template <class Group>
-  double measure_arbitrary_loop_one_timeslice_PC(const gaugeconfig<Group>&U,
+  std::vector<double> measure_arbitrary_loop_one_timeslice_PC(const gaugeconfig<Group>&U,
                                           const size_t t,
                                           const std::vector<size_t> &lengths,
                                           const std::vector<size_t> &directions,
-                                          const std::vector<bool> &sign, 
-                                          const bool P, 
-                                          const bool C){
-    double res = 0.;
+                                          const std::vector<bool> &sign){
+                                          //~ , 
+                                          //~ const bool P, 
+                                          //~ const bool C){
+    std::vector<double> res(4);
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
-    size_t par=(P? +1: -1);
     //~ gaugeconfig<Group> PU=parityinvert(U);
     
     #pragma omp parallel for reduction(+ : res)
@@ -216,13 +216,17 @@ namespace operators {
         for (size_t z = 0; z < U.getLz(); z++) {
           std::vector<size_t> vecx = {t, x, y, z};
           //~ res += retrace(arbitrary_operator(U, vecx, lengths, directions, sign));
-          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/0);
-          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/par);
-          if(C){ //C=+
-            res += retrace(K1+K2);
-          } else{ //C=-
-            res += imtrace(K1+K2);
-          }
+          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/false);
+          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/true);
+          res[0]+=retrace(K1+K2);
+          res[1]+=imtrace(K1+K2);
+          res[2]+=retrace(K1-K2);
+          res[3]+=imtrace(K1-K2);
+          //~ if(C){ //C=+
+            //~ res += retrace(K1+K2);
+          //~ } else{ //C=-
+            //~ res += imtrace(K1+K2);
+          //~ }
         }
       }
     }

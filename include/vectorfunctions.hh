@@ -58,3 +58,10 @@ template<class numbertype=size_t> std::vector<numbertype> xminusmu(const std::ve
 //~ template<class numbertype=double> bool operator!=(const std::vector<numbertype> &v1, const std::vector<numbertype> &v2){
   //~ return (!(v1==v2));
 //~ }
+
+//elementwise addition, if vectors are of the same length
+template<class numbertype=double> void operator/=(std::vector<numbertype> &v1, numbertype scalar) {
+  for(size_t i = 0; i < v1.size(); i++){
+    v1[i] /= scalar;
+  }
+}
