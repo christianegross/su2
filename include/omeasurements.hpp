@@ -226,7 +226,7 @@ namespace omeasurements {
                         const std::string &filename_glueball,
                         const size_t &i){
     std::ofstream resultfile;
-    resultfile.open(filename_glueball, std::ios::app);
+    resultfile.open(filename_glueball + "pure", std::ios::app);
     Complex timeslice;
     if(pparams.ndims==4){
       for (size_t t = 0 ; t < pparams.Lt ; t++){ 
@@ -250,7 +250,8 @@ namespace omeasurements {
         timeslice=operators::plaquette_one_timeslice(U, t, 1, 2);
         timeslice/=(pparams.Lx*pparams.Ly*pparams.Lz); 
         resultfile << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-          //spacial-temporal
+        //~ std::cout << t << " " << std::setw(14) << std::scientific << std::real(timeslice) << "  " << std::imag(timeslice) << std::endl;
+          //~ //spacial-temporal
         timeslice=operators::plaquette_one_timeslice(U, t, 0, 1);
         timeslice+=operators::plaquette_one_timeslice(U, t, 0, 2);
         timeslice/=(2*pparams.Lx*pparams.Ly*pparams.Lz); 
@@ -273,28 +274,38 @@ namespace omeasurements {
                         const std::string &filename_glueball,
                         const size_t &i){
     std::ofstream resultfile;
-    resultfile.open(filename_glueball, std::ios::app);
+    std::ostringstream resname;
+    resname << filename_glueball << "proj." << i;
+    resultfile.open(resname.str(), std::ios::out);
     std::vector<double> timeslice;
+    std::vector<double> source;
+      resultfile << "# t C_PC(t) ++ +- -+ -- sum_x P_ss, PC(t) ++ +- -+ --" << std::endl;
     for (size_t t = 0 ; t < pparams.Lt ; t++){ 
         //spacial-spacial
+      timeslice=zerovector(4);
       for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
         for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
-          timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
+          timeslice+=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
         }
       }
-      timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz); 
+      timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz);
+      if(t==0){ 
+          source=timeslice;
+      } 
+      resultfile << t << " " << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        timeslice[0]*source[0] << " " << timeslice[1]*source[1] << " " << timeslice[2]*source[2] << " " << timeslice[3]*source[3] << " ";
       resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        timeslice[0] << "  " << timeslice[1] << "  " << timeslice[2] << "  " << timeslice[3] << "  ";
+        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3];
           //spacial-temporal
-      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-        timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
-      }
-      timeslice/=(double)((pparams.ndims-1)*pparams.Lx*pparams.Ly*pparams.Lz); 
-      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        timeslice[0] << "  " << timeslice[1] << "  " << timeslice[2] << "  " << timeslice[3] << "  ";
+      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+        //~ timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
+      //~ }
+      //~ timeslice/=(double)((pparams.ndims-1)*pparams.Lx*pparams.Ly*pparams.Lz); 
+      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << " ";
+    resultfile << std::endl;
     }
-    resultfile << i;
-    resultfile << std::endl; 
+    resultfile << "# config no." << i << std::endl; 
     resultfile.close();
   }
 

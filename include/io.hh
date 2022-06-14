@@ -118,7 +118,8 @@ namespace io {
         << pparams.beta << ".xi" << std::fixed
         << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
         << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "glueball"
-        << std::ends;
+        ;
+        //~ << std::ends;
 
       return f.str();
     }

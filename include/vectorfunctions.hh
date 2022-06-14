@@ -19,19 +19,27 @@ template<class numbertype=double> std::vector<numbertype> zerovector(size_t leng
 }
 
 //interprets the vector as a space-time coordinate and inverts the spatial cordinates
-template<class numbertype=size_t> std::vector<numbertype> invertspace(const std::vector<numbertype> &x){
+template<class numbertype=size_t> std::vector<numbertype> invertspace(const std::vector<numbertype> &x, size_t spatial_length){
     std::vector<numbertype> res = x;
+    res[1] = spatial_length-x[1];
+    res[2] = spatial_length-x[2];
+    res[3] = spatial_length-x[3];
+    return res;
+}
+template<class numbertype=int> std::array<numbertype, 4> invertspace(const std::array<numbertype, 4> &x){
+    std::array<numbertype, 4> res = x;
     res[1] = -x[1];
     res[2] = -x[2];
     res[3] = -x[3];
     return res;
 }
 
-template<class numbertype=size_t> std::vector<numbertype> xminusmu(const std::vector<numbertype> &x, const size_t mu){
-    std::vector<numbertype> res=x;
-    res[mu]--;
-    return res;
-}
+//~ template<class numbertype=int> std::vector<numbertype> xminusmu(const std::vector<numbertype> &x, const size_t mu){
+    //~ std::vector<numbertype> res=x;
+    //~ res[mu]--;
+    //~ return res;
+//~ }
+
 
 
 
@@ -60,6 +68,20 @@ template<class numbertype=size_t> std::vector<numbertype> xminusmu(const std::ve
 //~ }
 
 //elementwise addition, if vectors are of the same length
+template<class numbertype=double> std::ostream& operator<<(std::ostream& os, std::vector<numbertype> &v1) {
+  for(size_t i = 0; i < v1.size(); i++){
+    os << v1[i] << " ";
+  }
+  return os;
+}
+
+template<class numbertype=double> std::ostream& operator<<(std::ostream& os, std::array<numbertype, 4> &v1) {
+  for(size_t i = 0; i < 4; i++){
+    os << v1[i] << " ";
+  }
+  return os;
+}
+
 template<class numbertype=double> void operator/=(std::vector<numbertype> &v1, numbertype scalar) {
   for(size_t i = 0; i < v1.size(); i++){
     v1[i] /= scalar;

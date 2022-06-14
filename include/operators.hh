@@ -85,11 +85,12 @@ namespace operators {
    * **/
   template <class Group>
   typename accum_type<Group>::type arbitrary_operator(const gaugeconfig<Group>&U, 
-                                             const std::vector<size_t> &x,
+                                             const std::array<int, 4> &x,
                                              const std::vector<size_t> &lengths,
                                              const std::vector<size_t> &directions,
                                              const std::vector<bool> &sign, 
-                                             const bool P=false){
+                                             const bool P=false, 
+                                             const bool verbose=false){
     typedef typename accum_type<Group>::type accum;
     //~ if(P!=0){
         //~ std::cerr << "Parity conjugation is not yet implemented correctly! Your results would be wrong. Aborting" << std::endl;
@@ -99,37 +100,41 @@ namespace operators {
       std::cerr << "the lengths of the descriptors of the loop are not equal, no loop can be calculated!" << std::endl;
       abort();
     }
-    std::vector<size_t> xrun=x;
+    std::array<int, 4> xrun=x;
+    if(P){xrun=invertspace(x);}
     accum L(1., 0.);
     for(size_t i=0; i<lengths.size(); i++){
       if(sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
           if(P && directions[i] > 0){ //parity and spacial
             xrun[directions[i]]--;
-            L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]).dagger();
+            L *= U(xrun, directions[i]).dagger();
           } else{
             if(P){ //parity and temporal
-              L *= U(invertspace(xrun), directions[i]);
+              L *= U(xrun, directions[i]);
             } else{ //standard
               L *= U(xrun, directions[i]);
             }
             xrun[directions[i]]++;
           }
+          if(P && verbose){std::cout << xrun << "-> ";}
         }
       }
       if(!sign[i]){
         for(size_t j=0; j<lengths[i]; j++){
           if(P && directions[i] > 0){ //parity and spacial
-            L *= U(xminusmu(invertspace(xrun), directions[i]), directions[i]);
+            L *= U(xrun, directions[i]);
             xrun[directions[i]]++;
           } else{
-            xrun[directions[i]]--;
             if(P){ //parity and temporal
-              L *= U(invertspace(xrun), directions[i]).dagger();
+              xrun[directions[i]]--;
+              L *= U(xrun, directions[i]).dagger();
             } else{ //standard
+              xrun[directions[i]]--;
               L *= U(xrun, directions[i]).dagger();
             }
           }
+          if(P && verbose){std::cout << xrun << "-> ";}
         }
       }
     }
@@ -137,6 +142,7 @@ namespace operators {
       std::cerr << "The loop was not closed!" << std::endl;
       //~ abort();
     }
+    if(verbose) {std::cout << std::endl;}
     return L;
   }
   
@@ -205,7 +211,8 @@ namespace operators {
                                           //~ , 
                                           //~ const bool P, 
                                           //~ const bool C){
-    std::vector<double> res(4);
+    std::vector<double> res=zerovector(4);
+    //~ std::vector<double> control=zerovector(4);
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
     //~ gaugeconfig<Group> PU=parityinvert(U);
@@ -214,22 +221,26 @@ namespace operators {
     for (size_t x = 0; x < U.getLx(); x++) {
       for (size_t y = 0; y < U.getLy(); y++) {
         for (size_t z = 0; z < U.getLz(); z++) {
-          std::vector<size_t> vecx = {t, x, y, z};
-          //~ res += retrace(arbitrary_operator(U, vecx, lengths, directions, sign));
+          std::array<int, 4> vecx = {int(t), int(x), int(y), int(z)};
           K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/false);
           K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/true);
           res[0]+=retrace(K1+K2);
           res[1]+=imtrace(K1+K2);
           res[2]+=retrace(K1-K2);
           res[3]+=imtrace(K1-K2);
-          //~ if(C){ //C=+
-            //~ res += retrace(K1+K2);
-          //~ } else{ //C=-
-            //~ res += imtrace(K1+K2);
-          //~ }
+          //~ res[4]+=retrace(K1);
+          //~ res[5]+=imtrace(K1);
+          //~ control[0]+=retrace(K1);
+          //~ control[1]+=retrace(K2);
+          //~ control[2]+=imtrace(K1);
+          //~ control[3]+=imtrace(K2);
         }
       }
     }
+    //~ std::cout << t << " "
+        //~ << control[0] << " " << << " " << control[2] << " " << << " " << std::endl;
+    //~ std::cout << "control sum plaquettes over lattice t=" << t << " "
+        //~ << control[0] - control[1] << " " << control[2] - control[3] << " " << res[4]/256.0 << " " << res[5]/256.0 << " " << std::endl;
     return res;
   }
   
