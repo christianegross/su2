@@ -87,7 +87,9 @@ int main(int ac, char *av[]) {
     io::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
   }
   if (mparams.glueball) {
-    io::measure::set_header_glueball(pparams, mparams, filename_glueball);
+    io::measure::set_header_glueball(pparams, mparams, filename_glueball + "pure");
+    io::measure::set_header_glueball(pparams, mparams, filename_glueball + "proj");
+    io::measure::set_header_glueball(pparams, mparams, filename_glueball + "projsources");
   }
 
   /**

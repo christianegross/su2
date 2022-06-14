@@ -138,7 +138,9 @@ namespace operators {
         }
       }
     }
-    if(xrun != x){
+    bool close= xrun==x;
+    if(P){ close=xrun == invertspace(x);}
+    if(!close){
       std::cerr << "The loop was not closed!" << std::endl;
       //~ abort();
     }
@@ -200,7 +202,7 @@ namespace operators {
   }
   
     /** 
-   * @brief returns an operator of the given loop, as a vector with PC={++, +-, -+, --}
+   * @brief returns an operator of the given loop, as a vector with PC={++, +-, -+, --} and the sum over the entire timeslice at t
    * **/
   template <class Group>
   std::vector<double> measure_arbitrary_loop_one_timeslice_PC(const gaugeconfig<Group>&U,
@@ -241,6 +243,32 @@ namespace operators {
         //~ << control[0] << " " << << " " << control[2] << " " << << " " << std::endl;
     //~ std::cout << "control sum plaquettes over lattice t=" << t << " "
         //~ << control[0] - control[1] << " " << control[2] - control[3] << " " << res[4]/256.0 << " " << res[5]/256.0 << " " << std::endl;
+    return res;
+  }
+  
+    /** 
+   * @brief returns an operator of the given loop, as a vector with PC={++, +-, -+, --} at (t, x=0)
+   * **/
+  template <class Group>
+  std::vector<double> measure_arbitrary_loop_source_PC(const gaugeconfig<Group>&U,
+                                          const size_t t,
+                                          const std::vector<size_t> &lengths,
+                                          const std::vector<size_t> &directions,
+                                          const std::vector<bool> &sign){
+                                          //~ , 
+                                          //~ const bool P, 
+                                          //~ const bool C){
+    std::vector<double> res=zerovector(4);
+    //~ std::vector<double> control=zerovector(4);
+    typedef typename accum_type<Group>::type accum;
+    accum K1, K2;
+    std::array<int, 4> vecx = {int(t), 0, 0, 0};
+    K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/false);
+    K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/true);
+    res[0]=retrace(K1+K2);
+    res[1]=imtrace(K1+K2);
+    res[2]=retrace(K1-K2);
+    res[3]=imtrace(K1-K2);
     return res;
   }
   

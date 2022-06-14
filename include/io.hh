@@ -113,11 +113,11 @@ namespace io {
       std::ostringstream f;
 
       f << mparams.resdir << "/"
-        << "result" << pparams.ndims - 1 << "p1d.Nt" << pparams.Lt << ".Ns"
+        << "glueball" << pparams.ndims - 1 << "p1d.Nt" << pparams.Lt << ".Ns"
         << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
         << pparams.beta << ".xi" << std::fixed
         << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
-        << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "glueball"
+        << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
         ;
         //~ << std::ends;
 
@@ -221,7 +221,7 @@ namespace io {
      * **/
     void set_header_glueball(const gp::physics &pparams,
                               gp::measure_u1 &mparams,
-                              const std::string &filename_glueball) {
+                              const std::string &filename_glueball, bool proj=false) {
       //~ open file for saving results
       std::ofstream resultfile;
 
@@ -233,7 +233,7 @@ namespace io {
       }
 
       //~ print heads of columns
-      if (!mparams.append && (pparams.ndims != 2)) {
+      if (!mparams.append && (pparams.ndims != 2) && !proj) {
         resultfile.open(filename_glueball, std::ios::out);
         resultfile << "## ";
         for (size_t t = 0; t < pparams.Lt; t++) {
@@ -245,6 +245,21 @@ namespace io {
         }
           //~ }
         //~ }
+        resultfile << "counter";
+        resultfile << std::endl;
+        resultfile.close();
+      }
+      
+      if(!mparams.append && proj){
+        resultfile.open(filename_glueball, std::ios::out);
+        resultfile << "# ";
+        for(size_t t = 0; t < pparams.Lt; t++) {
+          resultfile << "O_PC(" << t << ") // // //";
+        }
+        resultfile << std::endl << "# ";
+        for(size_t t = 0; t < pparams.Lt; t++) {
+          resultfile << "++ +- -+ --";
+        }
         resultfile << "counter";
         resultfile << std::endl;
         resultfile.close();
