@@ -260,9 +260,9 @@ namespace input_file_parsing {
           in.read_opt_verb<double>(mparams.alpha, {"measurements", "potential", "alpha"});
           in.read_opt_verb<double>(mparams.sizeWloops,
                                    {"measurements", "potential", "sizeWloops"});
-          if(!mparams.potentialnonplanar && ! mparams.potentialplanar){
+          if(!mparams.potentialnonplanar && ! mparams.potentialplanar && !mparams.glueball){
             std::cerr << "You want to measure something for the potential, "
-            << "but neither potentialplanar nor potentialnonplanar is selected"
+            << "but neither potentialplanar, potentialnonplanar nor glueball is selected"
             << std::endl << "no measurements for the potential will be made!" << std::endl;
           }
         }

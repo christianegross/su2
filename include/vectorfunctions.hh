@@ -14,7 +14,7 @@ template<class numbertype=double> void operator+=(std::vector<numbertype> &v1, s
 
 //returns a vector of length length filled with zeros
 template<class numbertype=double> std::vector<numbertype> zerovector(size_t length){
-    std::vector<numbertype> res(length); //zero is implicit
+    std::vector<numbertype> res(length, 0.0); //zero is implicit
     return res;
 }
 

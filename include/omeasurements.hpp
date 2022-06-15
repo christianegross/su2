@@ -273,8 +273,8 @@ namespace omeasurements {
                         const global_parameters::physics &pparams,
                         const std::string &filename_glueball,
                         const size_t &i){
-    std::ofstream resultfile, resultfileone, resultfilesource;
-    std::ostringstream resname, resnameone, resnamesource;
+    std::ofstream resultfile, resultfilesource; //,resultfileone
+    std::ostringstream resname, resnamesource; // , resnameone
     
     resname << filename_glueball << "proj";
     resultfile.open(resname.str(), std::ios::app);
@@ -291,7 +291,7 @@ namespace omeasurements {
     
     //~ std::cout << resnameone.str();
     
-    resultfileone << "# t C_PC,spatial(t) ++ +- -+ -- C_PC,temporal(t) ++ +- -+ -- " << std::endl;
+    //~ resultfileone << "# t C_PC,spatial(t) ++ +- -+ -- C_PC,temporal(t) ++ +- -+ -- " << std::endl;
     for (size_t t = 0 ; t < pparams.Lt ; t++){ 
         //spacial-spacial
       timeslice=zerovector(4);
@@ -341,27 +341,6 @@ namespace omeasurements {
     resultfile.close();
     resultfilesource.close();
     //~ resultfileone.close();
-    
-    //~ resname << "sources";
-    //~ std::cout << resname.str() << std::endl;
-    //~ resultfile.open(resname.str(), std::ios::app);
-    //~ for(size_t t=0; t<U.getLt(); t++){
-      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-        //~ for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
-          //~ source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
-        //~ }
-      //~ }
-      //~ source /= (pparams.ndims-1)*(pparams.ndims-2)/2.0;
-      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        //~ source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
-      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-          //~ source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
-        //~ }
-      //~ source /= (pparams.ndims-1)*1.0;
-      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        //~ source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
-    //~ }
-    //~ resultfile << i << std::endl;
   }
 
 

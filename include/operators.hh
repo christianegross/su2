@@ -210,20 +210,16 @@ namespace operators {
                                           const std::vector<size_t> &lengths,
                                           const std::vector<size_t> &directions,
                                           const std::vector<bool> &sign){
-                                          //~ , 
-                                          //~ const bool P, 
-                                          //~ const bool C){
     std::vector<double> res=zerovector(4);
-    std::vector<double> control=zerovector(4);
+    //~ std::vector<double> control=zerovector(4);
     typedef typename accum_type<Group>::type accum;
-    accum K1, K2;
-    //~ gaugeconfig<Group> PU=parityinvert(U);
     
     //~ #pragma omp parallel for reduction(+ : res, control)
     for (size_t x = 0; x < U.getLx(); x++) {
       for (size_t y = 0; y < U.getLy(); y++) {
         for (size_t z = 0; z < U.getLz(); z++) {
           std::array<int, 4> vecx = {int(t), int(x), int(y), int(z)};
+          accum K1, K2;
           //~ bool verbose=(t==0&x==0&y==0);
           bool verbose=false;
           //K1 = arbitrary_operator(U, vecx, lengths, directions, sign, parity=false, verbose);
@@ -235,10 +231,10 @@ namespace operators {
           res[3]+=imtrace(K1-K2);
           //~ res[4]+=retrace(K1);
           //~ res[5]+=imtrace(K1);
-          control[0]+=retrace(K1);
-          control[1]+=retrace(K2);
-          control[2]+=imtrace(K1);
-          control[3]+=imtrace(K2);
+          //~ control[0]+=retrace(K1);
+          //~ control[1]+=retrace(K2);
+          //~ control[2]+=imtrace(K1);
+          //~ control[3]+=imtrace(K2);
         }
       }
     }
@@ -264,7 +260,7 @@ namespace operators {
                                           //~ const bool P, 
                                           //~ const bool C){
     std::vector<double> res=zerovector(4);
-    std::vector<double> control=zerovector(4);
+    //~ std::vector<double> control=zerovector(4);
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
     std::array<int, 4> vecx = {int(t), 0, 0, 0};
@@ -274,10 +270,10 @@ namespace operators {
     res[1]=imtrace(K1+K2);
     res[2]=retrace(K1-K2);
     res[3]=imtrace(K1-K2);
-          control[0]+=retrace(K1);
-          control[1]+=retrace(K2);
-          control[2]+=imtrace(K1);
-          control[3]+=imtrace(K2);
+          //~ control[0]+=retrace(K1);
+          //~ control[1]+=retrace(K2);
+          //~ control[2]+=imtrace(K1);
+          //~ control[3]+=imtrace(K2);
     //~ std::cout << "control plaquettes at x=0 t=" << t << " "
         //~ << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
         
