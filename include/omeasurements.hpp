@@ -279,8 +279,8 @@ namespace omeasurements {
     resname << filename_glueball << "proj";
     resultfile.open(resname.str(), std::ios::app);
     
-    resnameone << filename_glueball << "proj." << i;
-    resultfileone.open(resnameone.str(), std::ios::out);
+    //~ resnameone << filename_glueball << "proj." << i;
+    //~ resultfileone.open(resnameone.str(), std::ios::out);
     
     resnamesource << filename_glueball << "source";
     resultfilesource.open(resnamesource.str(), std::ios::app);
@@ -305,15 +305,15 @@ namespace omeasurements {
       }
       timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz);
       resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << std::endl;
+        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << " ";
           
       source /= (pparams.ndims-1)*(pparams.ndims-2)/2.0;
       resultfilesource << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " " << std::endl;
+        source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " " << " ";
       if(t==0){sourcezero=source;}
         
-      resultfileone << t << " " << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        (1.0-timeslice[0])*(1.0-sourcezero[0]) << " " << (1.0-timeslice[1])*(1.0-sourcezero[1]) << " " << (1.0-timeslice[2])*(1.0-sourcezero[2]) << " " << (1.0-timeslice[3])*(1.0-sourcezero[3])<< " ";
+      //~ resultfileone << t << " " << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ (1.0-timeslice[0])*(1.0-sourcezero[0]) << " " << (1.0-timeslice[1])*(1.0-sourcezero[1]) << " " << (1.0-timeslice[2])*(1.0-sourcezero[2]) << " " << (1.0-timeslice[3])*(1.0-sourcezero[3])<< " ";
       
           //spacial-temporal
       //~ timeslice=zerovector(4);
@@ -333,14 +333,14 @@ namespace omeasurements {
       //~ resultfileone << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
         //~ timeslice[0]*source[0] << " " << timeslice[1]*source[1] << " " << timeslice[2]*source[2] << " " << timeslice[3]*source[3] << std::endl;
       
-    resultfileone << std::endl;
+    //~ resultfileone << std::endl;
     }
     resultfile << i << std::endl;
     resultfilesource << i << std::endl;
-    resultfileone << "# config no." << i << std::endl; 
+    //~ resultfileone << "# config no." << i << std::endl; 
     resultfile.close();
     resultfilesource.close();
-    resultfileone.close();
+    //~ resultfileone.close();
     
     //~ resname << "sources";
     //~ std::cout << resname.str() << std::endl;

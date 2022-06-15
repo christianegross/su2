@@ -244,9 +244,9 @@ namespace operators {
     }
     //~ std::cout << t << " "
         //~ << control[0] << " " << << " " << control[2] << " " << << " " << std::endl;
-    control /= double(U.getLx()*U.getLy()*U.getLz());
-    std::cout << "control sum plaquettes over lattice t=" << t << " "
-        << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
+    //~ control /= double(U.getLx()*U.getLy()*U.getLz());
+    //~ std::cout << "control sum plaquettes over lattice t=" << t << " "
+        //~ << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
     res /= 2.0;
     return res;
   }
@@ -278,8 +278,8 @@ namespace operators {
           control[1]+=retrace(K2);
           control[2]+=imtrace(K1);
           control[3]+=imtrace(K2);
-    std::cout << "control plaquettes at x=0 t=" << t << " "
-        << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
+    //~ std::cout << "control plaquettes at x=0 t=" << t << " "
+        //~ << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
         
     res /= 2.0;
     return res;
