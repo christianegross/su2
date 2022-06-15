@@ -89,7 +89,7 @@ int main(int ac, char *av[]) {
   if (mparams.glueball) {
     io::measure::set_header_glueball(pparams, mparams, filename_glueball + "pure");
     io::measure::set_header_glueball(pparams, mparams, filename_glueball + "proj");
-    io::measure::set_header_glueball(pparams, mparams, filename_glueball + "projsources");
+    io::measure::set_header_glueball(pparams, mparams, filename_glueball + "source");
   }
 
   /**

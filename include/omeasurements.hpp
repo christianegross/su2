@@ -273,60 +273,95 @@ namespace omeasurements {
                         const global_parameters::physics &pparams,
                         const std::string &filename_glueball,
                         const size_t &i){
-    std::ofstream resultfile;
-    std::ostringstream resname;
+    std::ofstream resultfile, resultfileone, resultfilesource;
+    std::ostringstream resname, resnameone, resnamesource;
+    
     resname << filename_glueball << "proj";
     resultfile.open(resname.str(), std::ios::app);
+    
+    resnameone << filename_glueball << "proj." << i;
+    resultfileone.open(resnameone.str(), std::ios::out);
+    
+    resnamesource << filename_glueball << "source";
+    resultfilesource.open(resnamesource.str(), std::ios::app);
+    
     std::vector<double> timeslice;
     std::vector<double> source=zerovector(4);
+    std::vector<double> sourcezero=zerovector(4);
     
-    //~ resultfile << "# t C_PC(t) ++ +- -+ -- sum_x P_ss, PC(t) ++ +- -+ --" << std::endl;
+    //~ std::cout << resnameone.str();
+    
+    resultfileone << "# t C_PC,spatial(t) ++ +- -+ -- C_PC,temporal(t) ++ +- -+ -- " << std::endl;
     for (size_t t = 0 ; t < pparams.Lt ; t++){ 
         //spacial-spacial
       timeslice=zerovector(4);
+      source=zerovector(4);
+      //~ std::cout << t << "\n";
       for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
         for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
           timeslice+=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
-        }
-      }
-      timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz);
-      //~ resultfile << t << " " << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        //~ timeslice[0]*source[0] << " " << timeslice[1]*source[1] << " " << timeslice[2]*source[2] << " " << timeslice[3]*source[3] << " ";
-      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3];
-          //spacial-temporal
-      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-        timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
-      }
-      timeslice/=(double)((pparams.ndims-1)*pparams.Lx*pparams.Ly*pparams.Lz); 
-      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << " ";
-    //~ resultfile << std::endl;
-    }
-    resultfile << i << std::endl;
-    //~ resultfile << "# config no." << i << std::endl; 
-    resultfile.close();
-    
-    resname << "sources";
-    std::cout << resname.str() << std::endl;
-    resultfile.open(resname.str(), std::ios::app);
-    for(size_t t=0; t<U.getLt(); t++){
-      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-        for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
           source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
         }
       }
+      timeslice/=((pparams.ndims-1)*(pparams.ndims-2)/2.0*pparams.Lx*pparams.Ly*pparams.Lz);
+      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << std::endl;
+          
       source /= (pparams.ndims-1)*(pparams.ndims-2)/2.0;
-      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
-      for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
-          source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
-        }
-      source /= (pparams.ndims-1)*1.0;
-      resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
-        source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
+      resultfilesource << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " " << std::endl;
+      if(t==0){sourcezero=source;}
+        
+      resultfileone << t << " " << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        (1.0-timeslice[0])*(1.0-sourcezero[0]) << " " << (1.0-timeslice[1])*(1.0-sourcezero[1]) << " " << (1.0-timeslice[2])*(1.0-sourcezero[2]) << " " << (1.0-timeslice[3])*(1.0-sourcezero[3])<< " ";
+      
+          //spacial-temporal
+      //~ timeslice=zerovector(4);
+      //~ source=zerovector(4);
+      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+        //~ timeslice=operators::measure_arbitrary_loop_one_timeslice_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
+        //~ source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
+      //~ }
+      //~ timeslice/=(double)((pparams.ndims-1)*pparams.Lx*pparams.Ly*pparams.Lz); 
+      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ timeslice[0] << " " << timeslice[1] << " " << timeslice[2] << " " << timeslice[3] << " ";
+        
+      //~ source /= (pparams.ndims-1)*1.0;
+      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
+    
+      //~ resultfileone << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ timeslice[0]*source[0] << " " << timeslice[1]*source[1] << " " << timeslice[2]*source[2] << " " << timeslice[3]*source[3] << std::endl;
+      
+    resultfileone << std::endl;
     }
     resultfile << i << std::endl;
+    resultfilesource << i << std::endl;
+    resultfileone << "# config no." << i << std::endl; 
+    resultfile.close();
+    resultfilesource.close();
+    resultfileone.close();
+    
+    //~ resname << "sources";
+    //~ std::cout << resname.str() << std::endl;
+    //~ resultfile.open(resname.str(), std::ios::app);
+    //~ for(size_t t=0; t<U.getLt(); t++){
+      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+        //~ for(size_t dim2=dim1+1; dim2 < pparams.ndims ; dim2++){
+          //~ source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, dim2, dim1, dim2}, /*sign=*/{true, true, false, false});
+        //~ }
+      //~ }
+      //~ source /= (pparams.ndims-1)*(pparams.ndims-2)/2.0;
+      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
+      //~ for(size_t dim1=1; dim1 < pparams.ndims-1 ; dim1++){
+          //~ source+=operators::measure_arbitrary_loop_source_PC(U, t, /*lengths=*/{1,1,1,1}, /*directions=*/{dim1, 0, dim1, 0}, /*sign=*/{true, true, false, false});
+        //~ }
+      //~ source /= (pparams.ndims-1)*1.0;
+      //~ resultfile << std::setw(14) << std::scientific << //std::real(timeslice) << "  " << std::imag(timeslice) << "  " ;
+        //~ source[0] << " " << source[1] << " " << source[2] << " " << source[3] << " ";
+    //~ }
+    //~ resultfile << i << std::endl;
   }
 
 

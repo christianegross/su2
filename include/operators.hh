@@ -117,7 +117,7 @@ namespace operators {
             }
             xrun[directions[i]]++;
           }
-          if(P && verbose){std::cout << xrun << "-> ";}
+          if(verbose){std::cout << xrun << "-> ";}
         }
       }
       if(!sign[i]){
@@ -134,12 +134,12 @@ namespace operators {
               L *= U(xrun, directions[i]).dagger();
             }
           }
-          if(P && verbose){std::cout << xrun << "-> ";}
+          if(verbose){std::cout << xrun << "-> ";}
         }
       }
     }
-    bool close= xrun==x;
-    if(P){ close=xrun == invertspace(x);}
+    bool close = (xrun==x);
+    if(P){ close = (xrun== invertspace(x));}
     if(!close){
       std::cerr << "The loop was not closed!" << std::endl;
       //~ abort();
@@ -214,35 +214,40 @@ namespace operators {
                                           //~ const bool P, 
                                           //~ const bool C){
     std::vector<double> res=zerovector(4);
-    //~ std::vector<double> control=zerovector(4);
+    std::vector<double> control=zerovector(4);
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
     //~ gaugeconfig<Group> PU=parityinvert(U);
     
-    #pragma omp parallel for reduction(+ : res)
+    //~ #pragma omp parallel for reduction(+ : res, control)
     for (size_t x = 0; x < U.getLx(); x++) {
       for (size_t y = 0; y < U.getLy(); y++) {
         for (size_t z = 0; z < U.getLz(); z++) {
           std::array<int, 4> vecx = {int(t), int(x), int(y), int(z)};
-          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/false);
-          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, /*P=*/true);
+          //~ bool verbose=(t==0&x==0&y==0);
+          bool verbose=false;
+          //K1 = arbitrary_operator(U, vecx, lengths, directions, sign, parity=false, verbose);
+          K1 = arbitrary_operator(U, vecx, lengths, directions, sign, false, verbose);
+          K2 = arbitrary_operator(U, vecx, lengths, directions, sign, true, verbose);
           res[0]+=retrace(K1+K2);
           res[1]+=imtrace(K1+K2);
           res[2]+=retrace(K1-K2);
           res[3]+=imtrace(K1-K2);
           //~ res[4]+=retrace(K1);
           //~ res[5]+=imtrace(K1);
-          //~ control[0]+=retrace(K1);
-          //~ control[1]+=retrace(K2);
-          //~ control[2]+=imtrace(K1);
-          //~ control[3]+=imtrace(K2);
+          control[0]+=retrace(K1);
+          control[1]+=retrace(K2);
+          control[2]+=imtrace(K1);
+          control[3]+=imtrace(K2);
         }
       }
     }
     //~ std::cout << t << " "
         //~ << control[0] << " " << << " " << control[2] << " " << << " " << std::endl;
-    //~ std::cout << "control sum plaquettes over lattice t=" << t << " "
-        //~ << control[0] - control[1] << " " << control[2] - control[3] << " " << res[4]/256.0 << " " << res[5]/256.0 << " " << std::endl;
+    control /= double(U.getLx()*U.getLy()*U.getLz());
+    std::cout << "control sum plaquettes over lattice t=" << t << " "
+        << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
+    res /= 2.0;
     return res;
   }
   
@@ -259,7 +264,7 @@ namespace operators {
                                           //~ const bool P, 
                                           //~ const bool C){
     std::vector<double> res=zerovector(4);
-    //~ std::vector<double> control=zerovector(4);
+    std::vector<double> control=zerovector(4);
     typedef typename accum_type<Group>::type accum;
     accum K1, K2;
     std::array<int, 4> vecx = {int(t), 0, 0, 0};
@@ -269,6 +274,14 @@ namespace operators {
     res[1]=imtrace(K1+K2);
     res[2]=retrace(K1-K2);
     res[3]=imtrace(K1-K2);
+          control[0]+=retrace(K1);
+          control[1]+=retrace(K2);
+          control[2]+=imtrace(K1);
+          control[3]+=imtrace(K2);
+    std::cout << "control plaquettes at x=0 t=" << t << " "
+        << control[0]  << " " << control[1] << " " << control[2]  << " " << control[3] << std::endl;
+        
+    res /= 2.0;
     return res;
   }
   
