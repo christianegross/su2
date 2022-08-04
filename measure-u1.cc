@@ -146,8 +146,9 @@ int main(int ac, char *av[]) {
     if (mparams.potentialplanar || mparams.potentialnonplanar) {
       // smear lattice
       for (size_t smears = 0; smears < mparams.n_apesmear; smears += 1) {
-        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only,
-                        mparams.smear_temporal_only);
+        //~ smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only,
+                        //~ mparams.smear_temporal_only);
+        spatial_APEsmearing_u1<double, _u1>(U, mparams.alpha);
       }
       double loop;
       if (mparams.potentialplanar) {
