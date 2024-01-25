@@ -148,7 +148,7 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
 
               std::ostringstream f;
 
-              f << std::setw(14) << std::scientific << U(x, mu).geta() << " " << rho;
+              f << std::setw(14) << std::scientific << U(x, mu).geta() << " " << theta_stap << " " << rho;
 
               std::string restmp = f.str();
               randvar[thread_num].push_back(restmp );
