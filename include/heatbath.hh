@@ -88,11 +88,11 @@ namespace hattori_nakajima {
 template <class URNG, class Group>
 std::vector<double> heatbath(gaugeconfig<Group> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false);
+                             const bool &temporalonly = false,
+                             const std::string &resfile = "");
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<u1> &U,
@@ -100,13 +100,16 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false,
+                             const std::string &resfile = "") {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
   double rate = 0.0, rate_time = 0.0, total_attempts = 0.0, temporal_attempts = 0.0;
 
-  const size_t endmu = temporalonly ? 1 : U.getndims(); 
+  const size_t endmu = temporalonly ? 1 : U.getndims();
+  size_t maxthreads = omp_get_max_threads();
+  std::vector<std::vector<std::string>> randvar(maxthreads);
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for reduction (+: rate, rate_time, total_attempts, temporal_attempts)
@@ -142,12 +145,31 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               if (mu == 0) {
                 rate_time += 1;
               }
+
+              std::ostringstream f;
+
+              f << std::setw(14) << std::scientific << U(x, mu).geta() << " " << rho;
+
+              std::string restmp = f.str();
+              randvar[thread_num].push_back(restmp );
+              // resultfile << std::setw(14) << std::scientific << rho << " " << U(x, mu).geta() << std::endl;
             }
           }
         }
       }
     }
   }
+ 
+  std::ofstream resultfile;
+  resultfile.open(resfile, std::ios::app);
+  for (size_t t = 0; t < maxthreads; t++){
+    // resultfile << randvar[t];
+    for (size_t elem=0; elem < randvar[t].size(); elem++) {
+      resultfile << randvar[t][elem] << std::endl;
+      // std::cout << randvar[t][elem] << std::endl;
+    }
+  }
+  resultfile.close();
 
   const size_t den_acceptance_rate = temporalonly ? U.getVolume() : U.getSize();
   const std::vector<double> res = {double(rate) / double(den_acceptance_rate),
@@ -210,11 +232,11 @@ std::vector<double> heatbath_legacy(gaugeconfig<u1> &U,
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su2> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false,
+                             const std::string &resfile = "") {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
@@ -223,11 +245,11 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su3> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false,
+                             const std::string &resfile = "") {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};

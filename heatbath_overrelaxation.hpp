@@ -62,12 +62,12 @@ public:
    *
    * @param i trajectory index
    */
-  void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
+  void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines, const std::string &resultfilehb) {
     (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/false);
+                             (*this).pparams.anisotropic, /*temporalonly=*/false, resultfilehb);
     for (size_t i_hbt = 0; i_hbt < (*this).sparams.n_heatbath_temporal; i_hbt++) {
       (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/true);
+                             (*this).pparams.anisotropic, /*temporalonly=*/true, resultfilehb);
     }
   }
 
@@ -111,6 +111,21 @@ public:
     if ((*this).sparams.do_omeas) {
       this->set_potential_filenames();
     }
+    std::ostringstream f;
+
+      f << (*this).sparams.conf_dir << "/"
+        << "result" << (*this).pparams.ndims - 1 << "p1d.randomnumbers.Nt" << (*this).pparams.Lt << ".Ns"
+        << (*this).pparams.Lx << ".b" << std::fixed << std::setprecision(6)
+        << (*this).pparams.beta << ".xi" << std::fixed
+        << std::setprecision(6) << (*this).pparams.xi
+        << std::ends;
+
+    std::string resultfilehb = f.str();
+
+
+  std::ofstream resultfilern;
+  resultfilern.open(resultfilehb, std::ios::out);
+  resultfilern.close();
 
     if ((*this).g_icounter == 0) {
       // header: column names in the output
@@ -142,7 +157,7 @@ public:
           for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
             engines[i_engine].seed(seed + i * d2 * d3 + i_engine * d3 + i_hb);
           }
-          this->do_heatbath(i, engines);
+          this->do_heatbath(i, engines, resultfilehb);
         }
 
         for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {
